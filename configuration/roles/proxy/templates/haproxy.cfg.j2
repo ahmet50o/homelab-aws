@@ -33,6 +33,6 @@ frontend https
 {% for backend in haproxy_backends %}
 backend {{ backend.name }}
     mode tcp
-    server {{ backend.name }} {{ backend.ip }}:{{ backend.port }} check ssl verify none
+    server {{ backend.name }} {{ backend.ip }}:{{ backend.port }} check
 
 {% endfor %}

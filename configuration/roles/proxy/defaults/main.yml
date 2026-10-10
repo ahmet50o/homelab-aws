@@ -2,16 +2,11 @@
 haproxy_http_port: 80
 haproxy_https_port: 443
 
+# Public reverse proxy: only customer-facing services.
+# gitlab + vault stay internal (reachable via the bastion), not exposed here.
+# kanban-app backend will be added in Phase 6.
 haproxy_backends:
-  - name: gitlab
-    host: "vm-gitlab.{{ domain }}"
-    ip: "{{ hostvars['vm-gitlab']['ansible_host'] }}"
-    port: 443
   - name: keycloak
     host: "vm-keycloak.{{ domain }}"
     ip: "{{ hostvars['vm-keycloak']['ansible_host'] }}"
     port: 8443
-  - name: vault
-    host: "vm-vault.{{ domain }}"
-    ip: "{{ hostvars['vm-vault']['ansible_host'] }}"
-    port: 8200

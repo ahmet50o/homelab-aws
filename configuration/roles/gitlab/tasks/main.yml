@@ -22,6 +22,14 @@
     mode: "0755"
   become: true
 
+- name: Write step-ca provisioner password (temporary)
+  copy:
+    dest: "{{ gitlab_dir_tls }}/.provisioner-pass"
+    content: "{{ vault_step_ca_password }}"
+    mode: "0600"
+  become: true
+  no_log: true
+
 - name: Request TLS certificate from step-ca
   command: >
     step ca certificate {{ gitlab_hostname }}
@@ -30,11 +38,16 @@
     --ca-url {{ step_ca_url }}
     --root /usr/local/share/ca-certificates/homelab-root-ca.crt
     --provisioner {{ step_ca_provisioner }}
-    --provisioner-password-file {{ step_ca_dir }}/password.txt
-    --not-after 2160h
+    --provisioner-password-file {{ gitlab_dir_tls }}/.provisioner-pass
     --force
   args:
     creates: "{{ gitlab_dir_tls }}/gitlab.crt"
+  become: true
+
+- name: Remove temporary provisioner password
+  file:
+    path: "{{ gitlab_dir_tls }}/.provisioner-pass"
+    state: absent
   become: true
 
 - name: Deploy gitlab.rb
@@ -73,7 +86,7 @@
   command: >
     gitlab-rails runner
     "unless Group.find_by_path('homelab');
-     Group.create!(name: 'Homelab', path: 'homelab', visibility_level: 0);
+     Group.create!(name: 'Homelab', path: 'homelab', visibility_level: 0, organization_id: 1);
      end"
   become: true
   changed_when: false

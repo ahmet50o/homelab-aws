@@ -142,6 +142,14 @@ resource "aws_security_group" "internal" {
   }
 
   ingress {
+    description = "Keycloak HTTPS from proxy"
+    from_port   = 8443
+    to_port     = 8443
+    protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["public"]]
+  }
+
+  ingress {
     description = "All traffic within internal zone"
     from_port   = 0
     to_port     = 0
