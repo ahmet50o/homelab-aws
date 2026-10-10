@@ -43,10 +43,20 @@
     src: "{{ subnet_public }}"
   become: true
 
+- name: Allow SSH from internet (bastion only)
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+  become: true
+  when: ufw_allow_external_ssh
+
 - name: Enable UFW
   ufw:
     state: enabled
   become: true
+  async: 30
+  poll: 5
 
 - name: Deploy Fail2ban configuration
   copy:

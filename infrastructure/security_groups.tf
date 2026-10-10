@@ -1,10 +1,10 @@
 # ============================================================
-# Public zone — bastion, proxy, CA
+# Public zone — bastion, proxy
 # ============================================================
 
 resource "aws_security_group" "public" {
   name        = "${var.project}-sg-public"
-  description = "Public zone: bastion, proxy, CA"
+  description = "Public zone: bastion, proxy"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -50,12 +50,12 @@ resource "aws_security_group" "public" {
 }
 
 # ============================================================
-# Management zone — dns, storage
+# Management zone — dns, storage, ca
 # ============================================================
 
 resource "aws_security_group" "management" {
   name        = "${var.project}-sg-management"
-  description = "Management zone: dns, storage"
+  description = "Management zone: dns, storage, ca"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -96,6 +96,14 @@ resource "aws_security_group" "management" {
     to_port     = 2049
     protocol    = "tcp"
     cidr_blocks = [var.subnet_cidrs["kubernetes"]]
+  }
+
+  ingress {
+    description = "step-ca ACME from all zones"
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["192.168.0.0/16"]
   }
 
   egress {

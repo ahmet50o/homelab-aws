@@ -20,15 +20,15 @@ vms = {
   }
   "vm-ca" = {
     instance_type = "t3.micro"
-    subnet        = "public"
-    private_ip    = "192.168.20.11"
+    subnet        = "management"
+    private_ip    = "192.168.10.11"
     public_ip     = false
   }
   "vm-proxy" = {
     instance_type = "t3.small"
     subnet        = "public"
     private_ip    = "192.168.20.12"
-    public_ip     = false
+    public_ip     = true
   }
 
   "vm-dns" = {

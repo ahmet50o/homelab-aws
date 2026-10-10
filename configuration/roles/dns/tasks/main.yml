@@ -15,7 +15,7 @@
     owner: root
     group: bind
     mode: "0644"
-    validate: /usr/sbin/named-checkconf %s
+    validate: /usr/bin/named-checkconf %s
   become: true
   notify: Restart named
 
@@ -26,7 +26,7 @@
     owner: root
     group: bind
     mode: "0644"
-    validate: /usr/sbin/named-checkconf %s
+    validate: /usr/bin/named-checkconf %s
   become: true
   notify: Restart named
 

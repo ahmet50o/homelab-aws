@@ -24,14 +24,24 @@
     name: "{{ timezone }}"
   become: true
 
-- name: Configure NTP
-  copy:
-    dest: /etc/systemd/timesyncd.conf
-    content: |
-      [Time]
-      NTP=pool.ntp.org
+- name: Ensure systemd-resolved drop-in directory
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: "0755"
   become: true
-  notify: Restart timesyncd
+
+- name: Configure DNS resolver for homelab domain
+  copy:
+    dest: /etc/systemd/resolved.conf.d/homelab.conf
+    content: |
+      # Managed by Ansible — homelab DNS
+      [Resolve]
+      DNS={{ dns_server }}
+      Domains=homelab.local
+    mode: "0644"
+  become: true
+  notify: Restart systemd-resolved
 
 - name: Create /opt/homelab directory
   file:

@@ -1,6 +1,6 @@
 ---
-- name: Restart timesyncd
+- name: Restart systemd-resolved
   service:
-    name: systemd-timesyncd
+    name: systemd-resolved
     state: restarted
   become: true

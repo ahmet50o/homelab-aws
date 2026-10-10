@@ -1,0 +1,4 @@
+---
+ufw_allow_external_ssh: false
+# Only the bastion (jump host) needs to permit TCP forwarding for ProxyJump/-W
+ssh_allow_tcp_forwarding: false

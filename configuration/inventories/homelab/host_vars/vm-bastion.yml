@@ -1,2 +1,4 @@
 ---
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+ufw_allow_external_ssh: true
+ssh_allow_tcp_forwarding: true
