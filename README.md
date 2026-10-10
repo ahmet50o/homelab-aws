@@ -101,3 +101,4 @@ Ich habe bei diesem Projekt mit Claude Code gearbeitet, als Tutor und zum gemein
 Programmieren. Vieles in den Rollen ist so entstanden. Mir war wichtig, dass ich verstehe,
 was ich da aufbaue, deshalb ist das Projekt auch langsamer gewachsen, als es mit reinem
 Generieren möglich wäre.
+Außerdem habe ich die ursprünglichen Commits zusammengefasst und eine neue saubere Historie erstellt mit weniger Commits.
