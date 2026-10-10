@@ -1,6 +1,10 @@
-
+---
 - name: Restart containerd
   service:
     name: containerd
     state: restarted
+  become: true
+
+- name: Reload sysctl
+  command: sysctl --system
   become: true

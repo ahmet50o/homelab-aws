@@ -16,3 +16,8 @@
 
 # Logs
 *.log
+
+# Temporary notefiles
+notes/
+
+configuration/inventories/homelab/group_vars/all/vault.yml
