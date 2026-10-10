@@ -1,0 +1,31 @@
+---
+# Beispiel für vault.yml. Die echte Datei liegt nicht im Repo.
+#
+#   cp vault.example.yml vault.yml
+#   Werte eintragen
+#   ansible-vault encrypt vault.yml
+#
+# Das Vault-Passwort wird aus ~/.vault_pass gelesen (siehe ansible.cfg).
+
+# step-ca
+vault_step_ca_password: "CHANGE_ME"
+
+# PostgreSQL
+vault_postgresql_gitlab_password: "CHANGE_ME"
+vault_postgresql_keycloak_password: "CHANGE_ME"
+vault_postgresql_app_password: "CHANGE_ME"
+
+# Keycloak
+vault_keycloak_admin_password: "CHANGE_ME"
+vault_keycloak_gitlab_client_secret: "CHANGE_ME"
+vault_keycloak_app_client_secret: "CHANGE_ME"
+
+# GitLab
+vault_gitlab_root_password: "CHANGE_ME"
+vault_gitlab_secret_key: "CHANGE_ME"
+
+# HashiCorp Vault
+# Beim ersten Lauf leer lassen. Vault wird dann initialisiert und die Keys
+# landen auf vm-vault in /root/vault-init.json. Danach zwei davon hier eintragen.
+vault_hashicorp_unseal_key_1: ""
+vault_hashicorp_unseal_key_2: ""

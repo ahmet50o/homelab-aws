@@ -1,6 +1,0 @@
----
-- name: Apply common and hardening to all VMs
-  hosts: all_vms
-  roles:
-    - common
-    - hardening
