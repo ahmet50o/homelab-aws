@@ -1,0 +1,18 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+*.tfvars
+!example.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+.vault_pass
+
+# Keys
+*.pem
+*.key
+
+# Logs
+*.log
