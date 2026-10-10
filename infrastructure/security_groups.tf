@@ -31,6 +31,14 @@ resource "aws_security_group" "public" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "step-ca ACME from internal VMs and Kubernetes"
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["192.168.0.0/16"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -64,6 +72,30 @@ resource "aws_security_group" "management" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.subnet_cidrs["management"]]
+  }
+
+  ingress {
+    description = "DNS UDP from all zones"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["192.168.0.0/16"]
+  }
+
+  ingress {
+    description = "DNS TCP from all zones"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["192.168.0.0/16"]
+  }
+
+  ingress {
+    description = "NFS from kubernetes zone"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["kubernetes"]]
   }
 
   egress {
@@ -102,6 +134,14 @@ resource "aws_security_group" "internal" {
   }
 
   ingress {
+    description = "All traffic within internal zone"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.subnet_cidrs["internal"]]
+  }
+
+  ingress {
     description = "All traffic from kubernetes zone (ESO, pods)"
     from_port   = 0
     to_port     = 0
@@ -137,7 +177,7 @@ resource "aws_security_group" "kubernetes" {
   }
 
   ingress {
-    description = "kubectl API from bastion"
+    description = "kubectl API from bastion and management"
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"

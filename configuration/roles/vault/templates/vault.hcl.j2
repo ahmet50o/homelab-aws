@@ -1,0 +1,15 @@
+# Managed by Ansible — do not edit manually
+
+storage "file" {
+  path = "{{ vault_dir_data }}"
+}
+
+listener "tcp" {
+  address            = "0.0.0.0:{{ vault_port }}"
+  tls_cert_file      = "{{ vault_tls_cert }}"
+  tls_key_file       = "{{ vault_tls_key }}"
+}
+
+api_addr     = "{{ vault_api_addr }}"
+cluster_addr = "https://{{ ansible_host }}:{{ vault_cluster_port }}"
+ui           = true

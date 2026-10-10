@@ -1,0 +1,18 @@
+# Managed by Ansible — do not edit manually
+[Unit]
+Description=Smallstep CA
+After=network.target
+
+[Service]
+Type=simple
+User=step-ca
+Group=step-ca
+Environment=STEPPATH={{ step_ca_dir }}
+ExecStart=/usr/local/bin/step-ca \
+    --password-file {{ step_ca_dir }}/password.txt \
+    {{ step_ca_dir }}/config/ca.json
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

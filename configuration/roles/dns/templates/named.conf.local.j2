@@ -1,0 +1,6 @@
+// Managed by Ansible — do not edit manually
+
+zone "{{ dns_zone }}" {
+    type master;
+    file "/etc/bind/db.{{ dns_zone }}";
+};

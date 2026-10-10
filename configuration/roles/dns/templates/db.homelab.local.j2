@@ -1,0 +1,38 @@
+; Managed by Ansible — do not edit manually
+; Zone: {{ dns_zone }}
+
+$TTL {{ dns_ttl }}
+
+@   IN  SOA  vm-dns.{{ dns_zone }}. admin.{{ dns_zone }}. (
+                {{ dns_serial }}  ; Serial
+                3600              ; Refresh
+                900               ; Retry
+                604800            ; Expire
+                {{ dns_negative_ttl }} ) ; Negative TTL
+
+@       IN  NS   vm-dns.{{ dns_zone }}.
+
+; Management zone
+{% for host in groups['management'] %}
+{{ hostvars[host]['inventory_hostname'] }}  IN  A  {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+; Public zone
+{% for host in groups['public'] %}
+{{ hostvars[host]['inventory_hostname'] }}  IN  A  {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+; Bastion
+{% for host in groups['bastion'] %}
+{{ hostvars[host]['inventory_hostname'] }}  IN  A  {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+; Internal zone
+{% for host in groups['internal'] %}
+{{ hostvars[host]['inventory_hostname'] }}  IN  A  {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+
+; Kubernetes zone
+{% for host in groups['kubernetes'] %}
+{{ hostvars[host]['inventory_hostname'] }}  IN  A  {{ hostvars[host]['ansible_host'] }}
+{% endfor %}

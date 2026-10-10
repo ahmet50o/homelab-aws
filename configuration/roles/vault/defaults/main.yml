@@ -1,0 +1,10 @@
+---
+vault_version: "1.19.3"
+vault_port: 8200
+vault_cluster_port: 8201
+vault_dir_config: "/etc/vault.d"
+vault_dir_data: "/opt/vault/data"
+vault_dir_tls: "/opt/vault/tls"
+vault_api_addr: "https://{{ ansible_host }}:{{ vault_port }}"
+vault_tls_cert: "{{ vault_dir_tls }}/vault.crt"
+vault_tls_key: "{{ vault_dir_tls }}/vault.key"

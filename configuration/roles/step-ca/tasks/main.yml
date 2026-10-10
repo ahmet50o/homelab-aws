@@ -1,0 +1,123 @@
+---
+- name: Create step-ca user
+  user:
+    name: step-ca
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ step_ca_dir }}"
+    create_home: false
+  become: true
+
+- name: Create step-ca directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: step-ca
+    group: step-ca
+    mode: "0750"
+  loop:
+    - "{{ step_ca_dir }}"
+    - "{{ step_ca_dir }}/certs"
+    - "{{ step_ca_dir }}/secrets"
+    - "{{ step_ca_dir }}/config"
+    - "{{ step_ca_dir }}/db"
+  become: true
+
+- name: Download step-ca binary
+  get_url:
+    url: "https://github.com/smallstep/certificates/releases/download/v{{ step_ca_version }}/step-ca_linux_amd64.tar.gz"
+    dest: /tmp/step-ca.tar.gz
+    mode: "0644"
+  become: true
+
+- name: Extract step-ca binary
+  unarchive:
+    src: /tmp/step-ca.tar.gz
+    dest: /tmp/
+    remote_src: true
+  become: true
+
+- name: Install step-ca binary
+  copy:
+    src: /tmp/step-ca_linux_amd64/step-ca
+    dest: /usr/local/bin/step-ca
+    mode: "0755"
+    remote_src: true
+  become: true
+
+- name: Download step CLI
+  get_url:
+    url: "https://github.com/smallstep/cli/releases/download/v{{ step_ca_version }}/step_linux_amd64.tar.gz"
+    dest: /tmp/step-cli.tar.gz
+    mode: "0644"
+  become: true
+
+- name: Extract step CLI
+  unarchive:
+    src: /tmp/step-cli.tar.gz
+    dest: /tmp/
+    remote_src: true
+  become: true
+
+- name: Install step CLI
+  copy:
+    src: /tmp/step_linux_amd64/bin/step
+    dest: /usr/local/bin/step
+    mode: "0755"
+    remote_src: true
+  become: true
+
+- name: Write CA password file
+  copy:
+    content: "{{ step_ca_password }}"
+    dest: "{{ step_ca_dir }}/password.txt"
+    owner: step-ca
+    group: step-ca
+    mode: "0600"
+  become: true
+
+- name: Check if CA already initialized
+  stat:
+    path: "{{ step_ca_dir }}/config/ca.json"
+  register: ca_config
+  become: true
+
+- name: Initialize CA
+  command: >
+    step ca init
+    --name "{{ step_ca_name }}"
+    --dns "{{ step_ca_dns_names | join(',') }}"
+    --address "{{ step_ca_address }}"
+    --provisioner "{{ step_ca_provisioner }}"
+    --password-file "{{ step_ca_dir }}/password.txt"
+    --path "{{ step_ca_dir }}"
+  environment:
+    STEPPATH: "{{ step_ca_dir }}"
+  become: true
+  become_user: step-ca
+  when: not ca_config.stat.exists
+
+- name: Deploy systemd service
+  template:
+    src: step-ca.service.j2
+    dest: /etc/systemd/system/step-ca.service
+    mode: "0644"
+  become: true
+  notify:
+    - Reload systemd
+    - Restart step-ca
+
+- name: Enable and start step-ca
+  service:
+    name: step-ca
+    state: started
+    enabled: true
+  become: true
+
+- name: Install root CA in trust store
+  copy:
+    src: "{{ step_ca_dir }}/certs/root_ca.crt"
+    dest: /usr/local/share/ca-certificates/homelab-root-ca.crt
+    remote_src: true
+  become: true
+  notify: Update CA certificates

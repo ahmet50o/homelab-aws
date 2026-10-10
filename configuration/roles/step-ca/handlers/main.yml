@@ -1,0 +1,15 @@
+---
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Restart step-ca
+  service:
+    name: step-ca
+    state: restarted
+  become: true
+
+- name: Update CA certificates
+  command: update-ca-certificates
+  become: true

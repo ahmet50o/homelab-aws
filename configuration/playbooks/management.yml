@@ -1,0 +1,16 @@
+---
+- name: Apply common and hardening to all VMs
+  hosts: all_vms
+  roles:
+    - common
+    - hardening
+
+- name: Configure DNS server
+  hosts: vm-dns
+  roles:
+    - dns
+
+- name: Configure NFS storage
+  hosts: vm-storage
+  roles:
+    - nfs

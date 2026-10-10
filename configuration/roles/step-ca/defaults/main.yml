@@ -1,0 +1,11 @@
+---
+step_ca_version: "0.30.2"
+step_ca_name: "homelab-ca"
+step_ca_port: 9000
+step_ca_address: "0.0.0.0:{{ step_ca_port }}"
+step_ca_dns_names:
+  - "vm-ca.homelab.local"
+  - "localhost"
+step_ca_provisioner: "admin@homelab.local"
+step_ca_dir: "/etc/step-ca"
+step_ca_password: "{{ vault_step_ca_password }}"

@@ -1,0 +1,27 @@
+---
+- name: Configure Certificate Authority
+  hosts: vm-ca
+  roles:
+    - common
+    - hardening
+    - step-ca
+
+- name: Install root CA on all VMs
+  hosts: all_vms
+  become: true
+  tasks:
+    - name: Download homelab root CA
+      get_url:
+        url: "https://vm-ca.homelab.local:9000/roots.pem"
+        dest: /usr/local/share/ca-certificates/homelab-root-ca.crt
+        validate_certs: false
+        mode: "0644"
+
+    - name: Update CA certificates
+      command: update-ca-certificates
+      changed_when: true
+
+- name: Configure HashiCorp Vault
+  hosts: vm-vault
+  roles:
+    - vault

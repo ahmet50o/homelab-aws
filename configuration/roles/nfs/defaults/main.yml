@@ -1,0 +1,5 @@
+---
+nfs_export_path: "/data/k8s"
+nfs_export_network: "192.168.0.0/16"
+nfs_export_options: "rw,sync,no_subtree_check,no_root_squash"
+nfs_mount_point: "/mnt/nfs"

@@ -1,0 +1,140 @@
+---
+- name: Create vault group
+  group:
+    name: vault
+    system: true
+  become: true
+
+- name: Create vault user
+  user:
+    name: vault
+    group: vault
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ vault_dir_data }}"
+    create_home: false
+  become: true
+
+- name: Create vault directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0750"
+  loop:
+    - "{{ vault_dir_config }}"
+    - "{{ vault_dir_data }}"
+    - "{{ vault_dir_tls }}"
+  become: true
+
+- name: Download vault binary
+  get_url:
+    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: /tmp/vault.zip
+    mode: "0644"
+  become: true
+
+- name: Unzip vault to /tmp
+  unarchive:
+    src: /tmp/vault.zip
+    dest: /tmp/
+    remote_src: true
+  become: true
+
+- name: Install vault binary
+  copy:
+    src: /tmp/vault
+    dest: /usr/local/bin/vault
+    mode: "0755"
+    remote_src: true
+  become: true
+
+- name: Clean up vault zip
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/vault.zip
+    - /tmp/vault
+  become: true
+
+- name: Deploy vault configuration
+  template:
+    src: vault.hcl.j2
+    dest: "{{ vault_dir_config }}/vault.hcl"
+    owner: vault
+    group: vault
+    mode: "0640"
+  become: true
+  notify: Restart vault
+
+- name: Deploy systemd service
+  template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    mode: "0644"
+  become: true
+  notify:
+    - Reload systemd
+    - Restart vault
+
+- name: Enable and start vault
+  service:
+    name: vault
+    state: started
+    enabled: true
+  become: true
+
+- name: Wait for vault to be ready
+  wait_for:
+    port: "{{ vault_port }}"
+    host: 127.0.0.1
+    delay: 3
+    timeout: 30
+
+- name: Check vault status
+  command: vault status -format=json
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+  register: vault_status_raw
+  failed_when: vault_status_raw.rc not in [0, 2]
+  changed_when: false
+  become: true
+
+- name: Parse vault status
+  set_fact:
+    vault_status: "{{ vault_status_raw.stdout | from_json }}"
+
+- name: Initialize vault
+  command: >
+    vault operator init
+    -key-shares=3
+    -key-threshold=2
+    -format=json
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+  register: vault_init_raw
+  when: not vault_status.initialized
+  become: true
+
+- name: Save init output to file
+  copy:
+    content: "{{ vault_init_raw.stdout }}"
+    dest: /root/vault-init.json
+    mode: "0600"
+  when: not vault_status.initialized
+  become: true
+
+- name: Unseal vault
+  command: vault operator unseal {{ item }}
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+  loop:
+    - "{{ vault_hashicorp_unseal_key_1 }}"
+    - "{{ vault_hashicorp_unseal_key_2 }}"
+  when:
+    - vault_status.sealed
+    - vault_hashicorp_unseal_key_1 != ""
+  become: true
+  no_log: true

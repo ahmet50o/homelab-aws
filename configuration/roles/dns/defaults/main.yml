@@ -1,0 +1,9 @@
+---
+dns_forwarders:
+  - "8.8.8.8"
+  - "8.8.4.4"
+
+dns_zone: "{{ domain }}"
+dns_ttl: 3600
+dns_serial: "2024010101"
+dns_negative_ttl: 300

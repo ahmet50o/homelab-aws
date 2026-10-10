@@ -1,0 +1,18 @@
+// Managed by Ansible — do not edit manually
+
+options {
+    directory "/var/cache/bind";
+
+    forwarders {
+{% for forwarder in dns_forwarders %}
+        {{ forwarder }};
+{% endfor %}
+    };
+
+    recursion yes;
+    allow-query { any; };
+    listen-on { any; };
+    listen-on-v6 { none; };
+
+    dnssec-validation no;
+};
