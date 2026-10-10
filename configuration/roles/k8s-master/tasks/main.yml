@@ -1,0 +1,49 @@
+---
+- name: Initialise control plane
+  command: >
+    kubeadm init
+    --control-plane-endpoint {{ kubernetes_control_plane_endpoint }}
+    --pod-network-cidr {{ kubernetes_pod_cidr }}
+    --upload-certs
+  args:
+    creates: /etc/kubernetes/admin.conf
+  become: true
+
+- name: Create .kube directory for ansible user
+  file:
+    path: /home/ansible/.kube
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: "0755"
+  become: true
+
+- name: Install kubeconfig for ansible user
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ansible/.kube/config
+    remote_src: true
+    owner: ansible
+    group: ansible
+    mode: "0600"
+  become: true
+
+- name: Install Cilium CLI
+  unarchive:
+    src: "https://github.com/cilium/cilium-cli/releases/download/v{{ cilium_cli_version }}/cilium-linux-amd64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: true
+    creates: /usr/local/bin/cilium
+  become: true
+
+- name: Check Cilium status
+  command: cilium status --wait=false
+  register: cilium_status
+  failed_when: false
+  changed_when: false
+
+- name: Install Cilium
+  command: >
+    cilium install --version {{ cilium_version }}
+    --set ipam.operator.clusterPoolIPv4PodCIDRList={{ kubernetes_pod_cidr }}
+  when: cilium_status.rc != 0

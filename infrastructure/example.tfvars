@@ -69,16 +69,10 @@ vms = {
     public_ip     = false
   }
 
-  "vm-k8s-master-01" = {
+  "vm-k8s-master" = {
     instance_type = "t3.small"
     subnet        = "kubernetes"
     private_ip    = "192.168.40.10"
-    public_ip     = false
-  }
-  "vm-k8s-master-02" = {
-    instance_type = "t3.small"
-    subnet        = "kubernetes"
-    private_ip    = "192.168.40.11"
     public_ip     = false
   }
   "vm-k8s-worker-01" = {

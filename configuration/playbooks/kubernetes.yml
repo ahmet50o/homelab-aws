@@ -1,0 +1,15 @@
+---
+- name: Prepare Kubernetes nodes
+  hosts: kubernetes
+  roles:
+    - k8s-common
+
+- name: Initialise Kubernetes control plane
+  hosts: k8s_masters
+  roles:
+    - k8s-master
+
+- name: Join Kubernetes workers
+  hosts: k8s_workers
+  roles:
+    - k8s-worker

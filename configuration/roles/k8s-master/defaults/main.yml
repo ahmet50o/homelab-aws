@@ -1,0 +1,5 @@
+---
+kubernetes_pod_cidr: "10.244.0.0/16"
+kubernetes_control_plane_endpoint: "vm-k8s-master.{{ domain }}"
+cilium_version: "1.19.4"
+cilium_cli_version: "0.19.3"
