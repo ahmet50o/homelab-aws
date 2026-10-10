@@ -1,0 +1,11 @@
+---
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Restart keycloak
+  service:
+    name: keycloak
+    state: restarted
+  become: true

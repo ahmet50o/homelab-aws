@@ -53,3 +53,17 @@
     state: started
     enabled: true
   become: true
+
+- name: Allow DNS UDP in UFW
+  ufw:
+    rule: allow
+    port: "53"
+    proto: udp
+  become: true
+
+- name: Allow DNS TCP in UFW
+  ufw:
+    rule: allow
+    port: "53"
+    proto: tcp
+  become: true

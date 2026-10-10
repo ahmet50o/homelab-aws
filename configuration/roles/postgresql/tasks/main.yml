@@ -1,0 +1,84 @@
+---
+- name: Install PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+    state: present
+    update_cache: true
+  become: true
+
+- name: Configure listen_addresses
+  lineinfile:
+    path: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  become: true
+  notify: Restart postgresql
+
+- name: Deploy pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  become: true
+  notify: Restart postgresql
+
+- name: Enable and start postgresql
+  service:
+    name: postgresql
+    state: started
+    enabled: true
+  become: true
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Create postgresql users
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    state: present
+  loop: "{{ postgresql_users }}"
+  become: true
+  become_user: postgres
+  no_log: true
+
+- name: Create postgresql databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    state: present
+  loop: "{{ postgresql_databases }}"
+  become: true
+  become_user: postgres
+
+- name: Create postgresql extensions
+  community.postgresql.postgresql_ext:
+    db: "{{ item.db }}"
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ postgresql_extensions }}"
+  become: true
+  become_user: postgres
+
+- name: Grant all privileges on databases
+  community.postgresql.postgresql_privs:
+    db: "{{ item.name }}"
+    privs: ALL
+    type: database
+    role: "{{ item.owner }}"
+    state: present
+  loop: "{{ postgresql_databases }}"
+  become: true
+  become_user: postgres
+
+- name: Allow postgresql port in UFW
+  ufw:
+    rule: allow
+    port: "{{ postgresql_port | string }}"
+    proto: tcp
+    src: "{{ subnet_internal }}"
+  become: true

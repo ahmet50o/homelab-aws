@@ -1,0 +1,17 @@
+# Managed by Ansible — do not edit manually
+# PostgreSQL Client Authentication Configuration
+
+# Local connections via Unix socket
+local   all   postgres                peer
+local   all   all                     peer
+
+# Local TCP connections
+host    all   all   127.0.0.1/32      scram-sha-256
+host    all   all   ::1/128           scram-sha-256
+
+# Internal network — all services
+host    all   all   192.168.0.0/16    scram-sha-256
+
+# Replication
+local   replication   all             peer
+host    replication   all   127.0.0.1/32   scram-sha-256

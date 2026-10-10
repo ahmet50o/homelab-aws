@@ -1,0 +1,27 @@
+---
+postgresql_version: "16"
+postgresql_port: 5432
+postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_version }}/main"
+postgresql_config_dir: "/etc/postgresql/{{ postgresql_version }}/main"
+
+postgresql_databases:
+  - name: gitlab_db
+    owner: gitlab
+  - name: keycloak_db
+    owner: keycloak
+  - name: app_db
+    owner: app
+
+postgresql_users:
+  - name: gitlab
+    password: "{{ vault_postgresql_gitlab_password }}"
+  - name: keycloak
+    password: "{{ vault_postgresql_keycloak_password }}"
+  - name: app
+    password: "{{ vault_postgresql_app_password }}"
+
+postgresql_extensions:
+  - db: gitlab_db
+    name: pg_trgm
+  - db: gitlab_db
+    name: btree_gist

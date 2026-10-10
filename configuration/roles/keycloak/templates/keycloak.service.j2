@@ -1,0 +1,20 @@
+# Managed by Ansible — do not edit manually
+[Unit]
+Description=Keycloak Identity Provider
+After=network-online.target postgresql.service
+Requires=network-online.target
+
+[Service]
+Type=idle
+User=keycloak
+Group=keycloak
+Environment=KC_BOOTSTRAP_ADMIN_USERNAME={{ keycloak_admin_user }}
+Environment=KC_BOOTSTRAP_ADMIN_PASSWORD={{ keycloak_admin_password }}
+ExecStart={{ keycloak_dir }}/bin/kc.sh start --optimized
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

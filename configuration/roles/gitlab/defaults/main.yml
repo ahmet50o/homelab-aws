@@ -1,0 +1,22 @@
+---
+gitlab_version: "19.0.1"
+gitlab_external_url: "https://vm-gitlab.{{ domain }}"
+gitlab_port: 443
+
+gitlab_db_host: "vm-db.{{ domain }}"
+gitlab_db_port: 5432
+gitlab_db_name: "gitlab_db"
+gitlab_db_user: "gitlab"
+gitlab_db_password: "{{ vault_postgresql_gitlab_password }}"
+
+gitlab_root_password: "{{ vault_gitlab_root_password }}"
+gitlab_secret_key: "{{ vault_gitlab_secret_key }}"
+
+gitlab_dir_tls: "/etc/gitlab/tls"
+gitlab_hostname: "vm-gitlab.{{ domain }}"
+
+gitlab_email_from: "gitlab@{{ domain }}"
+gitlab_email_display_name: "GitLab Homelab"
+
+gitlab_keycloak_client_id: "gitlab"
+gitlab_keycloak_client_secret: "{{ vault_keycloak_gitlab_client_secret }}"

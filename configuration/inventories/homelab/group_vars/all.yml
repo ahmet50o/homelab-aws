@@ -32,3 +32,9 @@ subnet_public:     "192.168.20.0/24"
 subnet_management: "192.168.10.0/24"
 subnet_internal:   "192.168.30.0/24"
 subnet_kubernetes: "192.168.40.0/24"
+
+# ============================================================
+# step-ca shared settings
+# ============================================================
+step_ca_provisioner: "admin@homelab.local"
+step_ca_dir: "/etc/step-ca"

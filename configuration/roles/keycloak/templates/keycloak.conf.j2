@@ -1,0 +1,23 @@
+# Managed by Ansible — do not edit manually
+
+# Database
+db=postgres
+db-url={{ keycloak_db_url }}
+db-username={{ keycloak_db_user }}
+db-password={{ keycloak_db_password }}
+
+# TLS
+https-certificate-file={{ keycloak_dir_tls }}/keycloak.crt
+https-certificate-key-file={{ keycloak_dir_tls }}/keycloak.key
+https-port={{ keycloak_port }}
+http-enabled=false
+
+# Hostname
+hostname={{ keycloak_hostname }}
+hostname-strict=true
+
+# Proxy
+proxy-headers=xforwarded
+
+# Health
+health-enabled=true

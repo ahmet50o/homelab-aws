@@ -59,6 +59,32 @@
     - /tmp/vault
   become: true
 
+- name: Request TLS certificate from step-ca
+  command: >
+    step ca certificate vm-vault.{{ domain }}
+    {{ vault_tls_cert }}
+    {{ vault_tls_key }}
+    --ca-url {{ step_ca_url }}
+    --root /usr/local/share/ca-certificates/homelab-root-ca.crt
+    --provisioner {{ step_ca_provisioner }}
+    --provisioner-password-file {{ step_ca_dir }}/password.txt
+    --not-after 2160h
+    --force
+  become: true
+  args:
+    creates: "{{ vault_tls_cert }}"
+
+- name: Set TLS cert permissions
+  file:
+    path: "{{ item }}"
+    owner: vault
+    group: vault
+    mode: "0640"
+  loop:
+    - "{{ vault_tls_cert }}"
+    - "{{ vault_tls_key }}"
+  become: true
+
 - name: Deploy vault configuration
   template:
     src: vault.hcl.j2
@@ -96,7 +122,7 @@
 - name: Check vault status
   command: vault status -format=json
   environment:
-    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+    VAULT_ADDR: "https://127.0.0.1:{{ vault_port }}"
   register: vault_status_raw
   failed_when: vault_status_raw.rc not in [0, 2]
   changed_when: false
@@ -113,7 +139,7 @@
     -key-threshold=2
     -format=json
   environment:
-    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+    VAULT_ADDR: "https://127.0.0.1:{{ vault_port }}"
   register: vault_init_raw
   when: not vault_status.initialized
   become: true
@@ -129,7 +155,7 @@
 - name: Unseal vault
   command: vault operator unseal {{ item }}
   environment:
-    VAULT_ADDR: "http://127.0.0.1:{{ vault_port }}"
+    VAULT_ADDR: "https://127.0.0.1:{{ vault_port }}"
   loop:
     - "{{ vault_hashicorp_unseal_key_1 }}"
     - "{{ vault_hashicorp_unseal_key_2 }}"
@@ -138,3 +164,11 @@
     - vault_hashicorp_unseal_key_1 != ""
   become: true
   no_log: true
+
+- name: Allow vault port in UFW
+  ufw:
+    rule: allow
+    port: "{{ vault_port | string }}"
+    proto: tcp
+    src: "192.168.0.0/16"
+  become: true

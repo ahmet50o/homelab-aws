@@ -1,0 +1,45 @@
+---
+keycloak_version: "26.2.5"
+keycloak_port: 8443
+keycloak_http_port: 8080
+keycloak_dir: "/opt/keycloak"
+keycloak_dir_conf: "/opt/keycloak/conf"
+keycloak_dir_tls: "/opt/keycloak/tls"
+
+keycloak_db_url: "jdbc:postgresql://vm-db.{{ domain }}:5432/keycloak_db"
+keycloak_db_user: "keycloak"
+keycloak_db_password: "{{ vault_postgresql_keycloak_password }}"
+
+keycloak_admin_user: "admin"
+keycloak_admin_password: "{{ vault_keycloak_admin_password }}"
+
+keycloak_hostname: "vm-keycloak.{{ domain }}"
+
+step_ca_provisioner: "admin@homelab.local"
+step_ca_dir: "/etc/step-ca"
+
+keycloak_realms:
+  - name: internal
+    display_name: "Homelab Internal"
+  - name: app
+    display_name: "Homelab App"
+
+keycloak_clients:
+  - realm: internal
+    client_id: gitlab
+    secret: "{{ vault_keycloak_gitlab_client_secret }}"
+    redirect_uris:
+      - "https://vm-gitlab.{{ domain }}/*"
+  - realm: app
+    client_id: kanban-app
+    secret: "{{ vault_keycloak_app_client_secret }}"
+    redirect_uris:
+      - "https://app.{{ domain }}/*"
+
+keycloak_roles:
+  - realm: internal
+    name: admin
+  - realm: internal
+    name: developer
+  - realm: internal
+    name: viewer

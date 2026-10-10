@@ -1,0 +1,39 @@
+---
+- name: Install HAProxy
+  apt:
+    name: haproxy
+    state: present
+    update_cache: true
+  become: true
+
+- name: Deploy HAProxy configuration
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: "0644"
+    validate: haproxy -c -f %s
+  become: true
+  notify: Restart haproxy
+
+- name: Enable and start HAProxy
+  service:
+    name: haproxy
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow HTTP in UFW
+  ufw:
+    rule: allow
+    port: "{{ haproxy_http_port | string }}"
+    proto: tcp
+  become: true
+
+- name: Allow HTTPS in UFW
+  ufw:
+    rule: allow
+    port: "{{ haproxy_https_port | string }}"
+    proto: tcp
+  become: true

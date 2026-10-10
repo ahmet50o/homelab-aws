@@ -1,0 +1,87 @@
+---
+- name: Add GitLab apt repository
+  shell: >
+    curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
+  args:
+    creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+  become: true
+
+- name: Install GitLab CE
+  apt:
+    name: "gitlab-ce={{ gitlab_version }}-ce.0"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create TLS directory
+  file:
+    path: "{{ gitlab_dir_tls }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Request TLS certificate from step-ca
+  command: >
+    step ca certificate {{ gitlab_hostname }}
+    {{ gitlab_dir_tls }}/gitlab.crt
+    {{ gitlab_dir_tls }}/gitlab.key
+    --ca-url {{ step_ca_url }}
+    --root /usr/local/share/ca-certificates/homelab-root-ca.crt
+    --provisioner {{ step_ca_provisioner }}
+    --provisioner-password-file {{ step_ca_dir }}/password.txt
+    --not-after 2160h
+    --force
+  args:
+    creates: "{{ gitlab_dir_tls }}/gitlab.crt"
+  become: true
+
+- name: Deploy gitlab.rb
+  template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  notify: Reconfigure gitlab
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Wait for GitLab to be ready
+  wait_for:
+    port: 443
+    host: 127.0.0.1
+    delay: 30
+    timeout: 300
+  become: true
+
+- name: Set GitLab root password
+  command: >
+    gitlab-rails runner
+    "user = User.find_by_username('root');
+     user.password = '{{ gitlab_root_password }}';
+     user.password_confirmation = '{{ gitlab_root_password }}';
+     user.save!"
+  become: true
+  no_log: true
+  changed_when: false
+
+- name: Create homelab group
+  command: >
+    gitlab-rails runner
+    "unless Group.find_by_path('homelab');
+     Group.create!(name: 'Homelab', path: 'homelab', visibility_level: 0);
+     end"
+  become: true
+  changed_when: false
+
+- name: Allow GitLab port in UFW
+  ufw:
+    rule: allow
+    port: "{{ gitlab_port | string }}"
+    proto: tcp
+    src: "192.168.0.0/16"
+  become: true

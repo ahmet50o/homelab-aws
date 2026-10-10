@@ -32,3 +32,19 @@
     state: started
     enabled: true
   become: true
+
+- name: Allow NFS in UFW
+  ufw:
+    rule: allow
+    port: "2049"
+    proto: tcp
+    src: "{{ subnet_kubernetes }}"
+  become: true
+
+- name: Allow rpcbind in UFW
+  ufw:
+    rule: allow
+    port: "111"
+    proto: tcp
+    src: "{{ subnet_kubernetes }}"
+  become: true

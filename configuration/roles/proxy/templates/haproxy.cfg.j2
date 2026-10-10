@@ -1,0 +1,38 @@
+# Managed by Ansible — do not edit manually
+
+global
+    log /dev/log local0
+    maxconn 4096
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log global
+    mode tcp
+    option tcplog
+    timeout connect 5s
+    timeout client  30s
+    timeout server  30s
+
+frontend http
+    bind *:{{ haproxy_http_port }}
+    mode http
+    redirect scheme https code 301
+
+frontend https
+    bind *:{{ haproxy_https_port }}
+    mode tcp
+    tcp-request inspect-delay 5s
+    tcp-request content accept if { req_ssl_hello_type 1 }
+
+{% for backend in haproxy_backends %}
+    use_backend {{ backend.name }} if { req_ssl_sni -i {{ backend.host }} }
+{% endfor %}
+
+{% for backend in haproxy_backends %}
+backend {{ backend.name }}
+    mode tcp
+    server {{ backend.name }} {{ backend.ip }}:{{ backend.port }} check ssl verify none
+
+{% endfor %}
