@@ -1,0 +1,61 @@
+---
+- name: Install security packages
+  apt:
+    name:
+      - ufw
+      - fail2ban
+    state: present
+  become: true
+
+- name: Deploy SSH configuration
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0600"
+    validate: /usr/sbin/sshd -t -f %s
+  become: true
+  notify: Restart sshd
+
+- name: Set UFW default policies
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: incoming, policy: deny }
+    - { direction: outgoing, policy: allow }
+  become: true
+
+- name: Allow SSH from management subnet
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    src: "{{ subnet_management }}"
+  become: true
+
+- name: Allow SSH from public subnet
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    src: "{{ subnet_public }}"
+  become: true
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+  become: true
+
+- name: Deploy Fail2ban configuration
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      maxretry = 5
+      bantime = 3600
+      findtime = 600
+  become: true
+  notify: Restart fail2ban

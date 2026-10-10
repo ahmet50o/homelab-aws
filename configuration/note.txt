@@ -1,0 +1,1 @@
+Replace placeholder BASTION_IP in ansible.cfg after Terraform apply
